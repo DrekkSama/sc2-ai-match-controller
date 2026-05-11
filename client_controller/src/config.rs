@@ -12,6 +12,7 @@ pub struct ControllerConfig {
     pub bots_directory: String,
     pub logs_directory: String,
     pub matches_file: String,
+    pub observer_bot_path: String,
 }
 
 pub fn initialize_config() -> ControllerConfig {

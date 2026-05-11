@@ -18,6 +18,7 @@ use serde::{Deserialize, Serialize};
 pub enum PlayerNum {
     One,
     Two,
+    Observer,
 }
 
 impl PlayerNum {
@@ -25,6 +26,7 @@ impl PlayerNum {
         match self {
             PlayerNum::One => PlayerNum::Two,
             PlayerNum::Two => PlayerNum::One,
+            PlayerNum::Observer => panic!("Observer has no other player"),
         }
     }
 }

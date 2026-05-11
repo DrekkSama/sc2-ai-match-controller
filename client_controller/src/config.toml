@@ -13,3 +13,5 @@ LOGS_DIRECTORY = "./logs"
 GAMESETS_DIRECTORY = "./gamesets"
 
 BOTS_DIRECTORY = "./bots"
+
+OBSERVER_BOT_PATH = "./bots/observer"

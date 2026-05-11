@@ -42,3 +42,7 @@ SC2_CONT_PORT=8083
 
 AWS = false
 CACHING_SERVER_URL="http://aiarena-caching-nodeport-service"
+
+# OBSERVER
+OBSERVER_ENABLED = false
+OBSERVER_BOT_PATH = "/bots/observer"

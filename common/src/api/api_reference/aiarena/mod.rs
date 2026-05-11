@@ -22,6 +22,7 @@ impl AiArenaResultForm {
                 let part_name = match player_num {
                     PlayerNum::One => "bot1_data",
                     PlayerNum::Two => "bot2_data",
+                    PlayerNum::Observer => unreachable!("Observer does not upload bot data"),
                 };
                 Self {
                     inner: self.inner.part(part_name, part),
@@ -39,6 +40,7 @@ impl AiArenaResultForm {
                 let part_name = match player_num {
                     PlayerNum::One => "bot1_log",
                     PlayerNum::Two => "bot2_log",
+                    PlayerNum::Observer => unreachable!("Observer does not upload bot logs"),
                 };
                 Self {
                     inner: self.inner.part(part_name, part),
@@ -82,6 +84,7 @@ impl AiArenaResultForm {
             let part_name = match player_num {
                 PlayerNum::One => "bot1_avg_step_time",
                 PlayerNum::Two => "bot2_avg_step_time",
+                PlayerNum::Observer => unreachable!("Observer does not report step times"),
             };
             Self {
                 inner: self.inner.text(part_name, avg_step_time.to_string()),
@@ -99,6 +102,7 @@ impl AiArenaResultForm {
             let part_name = match player_num {
                 PlayerNum::One => "bot1_tags",
                 PlayerNum::Two => "bot2_tags",
+                PlayerNum::Observer => unreachable!("Observer does not report tags"),
             };
             for tag in bot1_tags {
                 self.inner = self

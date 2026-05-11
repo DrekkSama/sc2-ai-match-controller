@@ -69,6 +69,9 @@ impl GameResult {
                 PlayerNum::Two => {
                     self.player2_result = Some(player_result);
                 }
+                PlayerNum::Observer => {
+                    // Observer results are not stored; they don't affect game outcome
+                }
             }
         }
     }

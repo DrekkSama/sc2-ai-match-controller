@@ -35,6 +35,10 @@ spec:
               value: debug
             - name: ACMATCH_MATCHES_FILE
               value: ''
+            - name: ACMATCH_OBSERVER_ENABLED
+              value: 'true'
+            - name: ACMATCH_OBSERVER_BOT_PATH
+              value: '/bots/observer'
           volumeMounts:
             - mountPath: /app/config.toml
               name: config
@@ -58,11 +62,16 @@ spec:
               value: '10001'
             - name: PLAYER_2_SEAT
               value: '10002'
+            - name: PLAYER_3_SEAT
+              value: '10003'
+            - name: OBSERVER_ENABLED
+              value: 'true'
             - name: SC2PATH
               value: /root/StarCraftII
           ports:
             - containerPort: 10001
             - containerPort: 10002
+            - containerPort: 10003
           readinessProbe:
             tcpSocket:
               port: 10002
@@ -138,7 +147,33 @@ spec:
               name: logs
               subPath: bot-controller-2
 
-      containers:
+        # Start observer bot controller
+        - name: bot-controller-observer
+          image: PLACEHOLDER_BOT_OBSERVER_CONTROLLER
+          restartPolicy: Always
+          env:
+            - name: BOT_NAME
+              value: 'PLACEHOLDER_OBSERVER_BOT_NAME'
+            - name: GAME_HOST
+              value: 127.0.0.1
+            - name: GAME_PORT
+              value: '10003'
+            - name: OPPONENT_ID
+              value: ''
+            - name: OBSERVER_MODE
+              value: 'true'
+          resources:
+            limits:
+              cpu: '1'
+            requests:
+              cpu: '0.25'
+          volumeMounts:
+            - mountPath: /bot
+              name: bots
+              subPath: observer
+            - mountPath: /logs
+              name: logs
+              subPath: bot-controller-observer
 
         # This instance of match controller submits match results
         - name: match-controller
@@ -154,6 +189,10 @@ spec:
               value: debug
             - name: ACMATCH_MATCHES_FILE
               value: ''
+            - name: ACMATCH_OBSERVER_ENABLED
+              value: 'true'
+            - name: ACMATCH_OBSERVER_BOT_PATH
+              value: '/bots/observer'
           ports:
             - containerPort: 8080
               name: 8080tcp

@@ -28,6 +28,7 @@ pub async fn download_bot(
             current_match.bot2.bot_zip_md5hash.clone(),
             format!("{}_zip", current_match.bot2.name),
         ),
+        PlayerNum::Observer => unreachable!("Observer does not download bots"),
     };
     let mut url = url::Url::parse(&settings.caching_server_url).unwrap();
     url = url.join("/download").unwrap();
@@ -62,6 +63,7 @@ pub async fn download_bot_data(
     if let Some(source_url) = match player_num {
         PlayerNum::One => current_match.bot1.bot_data.clone(),
         PlayerNum::Two => current_match.bot2.bot_data.clone(),
+        PlayerNum::Observer => None,
     } {
         let mut url = url::Url::parse(&settings.caching_server_url).unwrap();
         url = url.join("/download").unwrap();
@@ -74,6 +76,7 @@ pub async fn download_bot_data(
                 current_match.bot2.bot_data_md5hash.clone(),
                 format!("{}_data", current_match.bot2.name),
             ),
+            PlayerNum::Observer => unreachable!("Observer does not download bot data"),
         };
         match api
             .download_cached_file(

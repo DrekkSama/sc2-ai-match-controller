@@ -34,6 +34,7 @@ async fn prepare_match(settings: &ACConfig, new_match: Match, map_name: String) 
 
     let mut match_request: MatchRequest = new_match.clone().into();
     match_request.map_name = map_name.clone();
+    match_request.observer_enabled = Some(settings.observer_enabled);
 
     delete_all_signals(&settings).await;
 
@@ -131,6 +132,18 @@ async fn delete_all_signals(settings: &ACConfig) {
         Ok(_) => {}
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}
         Err(e) => panic!("Failed to clear signal {:?}: {}", bot2_signal_exit_path, e),
+    }
+
+    // Delete observer signal.exit file if it exists
+    if settings.observer_enabled {
+        let observer_signal_exit_path = PathBuf::from(&settings.log_root)
+            .join("bot-controller-observer")
+            .join("signal.exit");
+        match tokio::fs::remove_file(&observer_signal_exit_path).await {
+            Ok(_) => {}
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}
+            Err(e) => panic!("Failed to clear signal {:?}: {}", observer_signal_exit_path, e),
+        }
     }
 }
 

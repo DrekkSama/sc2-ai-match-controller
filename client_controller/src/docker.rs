@@ -30,6 +30,8 @@ pub fn run_match(run_type: &str, config: &ControllerConfig, request: &MatchReque
     let template = template.replace("PLACEHOLDER_GAMESETS_DIRECTORY", &config.gamesets_directory);
     let template = template.replace("PLACEHOLDER_LOGS_DIRECTORY", &config.logs_directory);
     let template = template.replace("PLACEHOLDER_MATCH_DIRECTORY", &match_directory);
+    let template = template.replace("PLACEHOLDER_OBSERVER_BOT_NAME", "observer");
+    let template = template.replace("PLACEHOLDER_OBSERVER_BOT_DIRECTORY", &config.observer_bot_path);
 
     let mut compose_file = File::create("target/docker-compose.yaml")
         .unwrap_or_else(|e| panic!("Could not create docker-compose.yaml file: {e:?}"));

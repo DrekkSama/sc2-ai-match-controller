@@ -15,6 +15,8 @@ pub struct JobTemplateValues {
     pub bot2_controller_image: String,
     pub bot2_name: String,
     pub bot2_id: String,
+    pub observer_bot_controller_image: String,
+    pub observer_bot_name: String,
 }
 
 // Replaces all placeholders in the job template with actual values
@@ -36,7 +38,9 @@ pub fn render_job_template(template: &str, values: &JobTemplateValues) -> anyhow
         .replace("PLACEHOLDER_BOT1_ID", &values.bot1_id)
         .replace("PLACEHOLDER_BOT2_CONTROLLER", &values.bot2_controller_image)
         .replace("PLACEHOLDER_BOT2_NAME", &values.bot2_name)
-        .replace("PLACEHOLDER_BOT2_ID", &values.bot2_id);
+        .replace("PLACEHOLDER_BOT2_ID", &values.bot2_id)
+        .replace("PLACEHOLDER_BOT_OBSERVER_CONTROLLER", &values.observer_bot_controller_image)
+        .replace("PLACEHOLDER_OBSERVER_BOT_NAME", &values.observer_bot_name);
 
     let job: Job = serde_yaml::from_str(&rendered)?;
     Ok(job)

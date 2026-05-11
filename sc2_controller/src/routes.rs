@@ -4,22 +4,20 @@ use anyhow::{anyhow, Result};
 use axum::routing::get;
 use axum::Router;
 use common::paths;
-use common::portpicker::pick_unused_port_in_range;
 use std::net::SocketAddr;
 use std::str::FromStr;
 use tempfile::TempDir;
 use tokio::task::JoinHandle;
 
-pub async fn open_player_seat(player_num: u8) -> Result<JoinHandle<()>> {
-    // TODO: Use fixed ports instead
-    let port = pick_unused_port_in_range(9000..10000)
-        .ok_or_else(|| anyhow!("Could not allocate port".to_string()))?;
+pub async fn open_player_seat(player_num: u8, is_observer: bool, sc2_internal_port: u16) -> Result<JoinHandle<()>> {
+    let player_seat = PlayerSeat::new(player_num, sc2_internal_port, is_observer);
 
-    let player_seat = PlayerSeat::new(player_num, port);
-
-    start_sc2_process(&player_seat)
-        .await
-        .map_err(|e| anyhow!("Failed to start SC2 process: {e}"))?;
+    // Only start SC2 process for non-observer seats; observer reuses Player 1's SC2 process
+    if !is_observer {
+        start_sc2_process(&player_seat)
+            .await
+            .map_err(|e| anyhow!("Failed to start SC2 process: {e}"))?;
+    }
 
     let ws_server = start_ws_server(&player_seat)
         .await

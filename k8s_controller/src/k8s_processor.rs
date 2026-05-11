@@ -116,6 +116,8 @@ async fn retrieve_match(settings: &K8sConfig, ac: &Arenaclient) -> anyhow::Resul
         bot2_controller_image: format!("aiarena/arenaclient-bot:{}", settings.version),
         bot2_name: new_match.bot2.name.clone(),
         bot2_id: new_match.bot2.game_display_id.clone(),
+        observer_bot_controller_image: format!("aiarena/arenaclient-bot:{}", settings.version),
+        observer_bot_name: "observer".to_string(),
     };
     let job_data = render_job_template(template, &values)?;
 

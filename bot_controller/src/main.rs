@@ -41,6 +41,14 @@ async fn run_bot() {
     let opponent_id =
         std::env::var("OPPONENT_ID").expect("Missing OPPONENT_ID environment variable");
 
+    let is_observer = std::env::var("OBSERVER_MODE")
+        .map(|v| v == "true")
+        .unwrap_or(false);
+
+    if is_observer {
+        info!("Starting observer bot");
+    }
+
     let game_address = format!("{game_host}:{game_port}");
     let server_address = match lookup_host(game_address).await {
         Ok(mut addrs) => addrs.next().map(|x| x.ip().to_string()),

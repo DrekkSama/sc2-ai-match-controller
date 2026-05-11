@@ -9,15 +9,18 @@ pub struct PlayerSeat {
     // The port to the SC2 process
     // TODO: Use fixed internal port instead
     pub internal_port: u16,
+
+    pub is_observer: bool,
 }
 
 impl PlayerSeat {
-    pub fn new(num: u8, port: u16) -> Self {
+    pub fn new(num: u8, port: u16, is_observer: bool) -> Self {
         PlayerSeat {
             player_num: num,
             pass_port: get_pass_port(num),
             external_port: get_external_port(num),
             internal_port: port,
+            is_observer,
         }
     }
 }

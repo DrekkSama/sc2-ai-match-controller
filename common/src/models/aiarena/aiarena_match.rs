@@ -41,6 +41,7 @@ impl MatchPlayer {
                 bot_type: ai_match.bot2._type.clone(),
                 bot_base: ai_match.bot2.bot_base.clone().unwrap_or_default(),
             },
+            PlayerNum::Observer => unreachable!("Observer is not a match player"),
         }
     }
 
@@ -137,6 +138,9 @@ pub struct MatchRequest {
     pub map_name: String,
     pub player_1_race: u8,
     pub player_2_race: u8,
+
+    #[serde(default)]
+    pub observer_enabled: Option<bool>,
 }
 
 impl From<Match> for MatchRequest {
@@ -150,6 +154,7 @@ impl From<Match> for MatchRequest {
             map_name: a_match.map_name.clone(),
             player_1_race: a_match.players[&PlayerNum::One].race as u8,
             player_2_race: a_match.players[&PlayerNum::Two].race as u8,
+            observer_enabled: None,
         }
     }
 }

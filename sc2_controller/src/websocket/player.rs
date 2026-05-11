@@ -157,7 +157,7 @@ impl Player {
         request
     }
 
-    pub async fn create_game(&mut self, map: &str, realtime: bool) -> Result<(), PlayerError> {
+    pub async fn create_game(&mut self, map: &str, realtime: bool, observer_enabled: bool) -> Result<(), PlayerError> {
         let ping_request = create_ping_request();
         for _ in 0..10 {
             match self.sc2_query(&ping_request).await {
@@ -171,7 +171,11 @@ impl Player {
             }
         }
         // Craft CreateGame request
-        let player_configs: Vec<CreateGamePlayer> = vec![CreateGamePlayer::Participant; 2];
+        let player_configs: Vec<CreateGamePlayer> = if observer_enabled {
+            vec![CreateGamePlayer::Participant, CreateGamePlayer::Participant, CreateGamePlayer::Observer]
+        } else {
+            vec![CreateGamePlayer::Participant; 2]
+        };
 
         // Send CreateGame request to first procs
         let proto = Self::proto_create_game(&player_configs, map, realtime);
@@ -322,13 +326,17 @@ impl Player {
                 let resp = self.sc2_query(&msg).await?;
                 self.bot_send_response(&resp).await?;
             } else if msg.has_join_game() {
-                let req_raw = proto_join_game_participant(
-                    &msg,
-                    &port_config,
-                    config,
-                    player_num,
-                    player_pass,
-                );
+                let req_raw = if player_num == PlayerNum::Observer {
+                    proto_join_game_observer(&msg, &port_config)
+                } else {
+                    proto_join_game_participant(
+                        &msg,
+                        &port_config,
+                        config,
+                        player_num,
+                        player_pass,
+                    )
+                };
 
                 if req_raw.is_none() {
                     return Err(PlayerError::NoMessageAvailable);
@@ -388,8 +396,9 @@ impl Player {
                     // Using disable_fog=true in observation requests in combination with
                     // show_cloaked/show_burrowed_shadows in the join game request
                     // results in visibility of opponent units in the fog of war.
-                    // Here, we make sure it doesn't happen by clearing disable_fog.
-                    if request.has_observation() {
+                    // For participants, we clear disable_fog to prevent cheating.
+                    // For observers, we leave disable_fog as-is since they should see everything.
+                    if player_num != PlayerNum::Observer && request.has_observation() {
                         request.mut_observation().clear_disable_fog();
                     }
 
@@ -399,7 +408,9 @@ impl Player {
 
                     if response.has_game_info() {
                         for pi in &mut response.mut_game_info().player_info {
-                            if pi.player_id() != r_vars.player_id() {
+                            if player_num == PlayerNum::Observer {
+                                // Observer doesn't have player entries in config, skip name override
+                            } else if pi.player_id() != r_vars.player_id() {
                                 pi.player_name =
                                     Some(config.players[&player_num.other_player()].name.clone());
                                 pi.race_actual = pi.race_requested;
@@ -554,6 +565,33 @@ fn proto_join_game_participant(
     r_join_game.options = MessageField::from_option(Some(player_data.interface_options));
 
     r_join_game.set_race(player_data.race);
+
+    port_config.apply_proto(&mut r_join_game);
+
+    let mut request = request.clone();
+    request.set_join_game(r_join_game);
+    Some(request)
+}
+
+fn proto_join_game_observer(
+    request: &Request,
+    port_config: &PortConfig,
+) -> Option<Request> {
+    let mut r_join_game = RequestJoinGame::new();
+
+    // Observer joins using the setup branch with PlayerType::Observer.
+    // This is the oneof branch separate from observed_player_id;
+    // we do NOT set observed_player_id — full map visibility is the goal.
+    let mut setup = sc2_proto::sc2api::PlayerSetup::new();
+    setup.type_ = Some(EnumOrUnknown::new(sc2_proto::sc2api::PlayerType::Observer));
+    r_join_game.set_setup(setup);
+
+    let mut options = sc2_proto::sc2api::InterfaceOptions::new();
+    options.set_raw(true);
+    options.set_score(true);
+    options.set_show_cloaked(true);
+    options.set_show_burrowed_shadows(true);
+    r_join_game.options = MessageField::from_option(Some(options));
 
     port_config.apply_proto(&mut r_join_game);
 

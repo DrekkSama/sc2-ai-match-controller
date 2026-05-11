@@ -11,6 +11,8 @@ services:
       - "ACMATCH_ARENA_CLIENT_ID=client-controller"
       - "ACMATCH_API_TOKEN=987"
       - "ACMATCH_KEEP_ALIVE=true"
+      - "ACMATCH_OBSERVER_ENABLED=true"
+      - "ACMATCH_OBSERVER_BOT_PATH=/bots/observer"
     volumes:
       - "PLACEHOLDER_BOTS_DIRECTORY:/bots"
       - "PLACEHOLDER_GAMESETS_DIRECTORY:/game"
@@ -33,6 +35,8 @@ services:
     environment:
       - "PLAYER_1_SEAT=10001"
       - "PLAYER_2_SEAT=10002"
+      - "PLAYER_3_SEAT=10003"
+      - "OBSERVER_ENABLED=true"
     volumes:
       - "PLACEHOLDER_GAMESETS_DIRECTORY:/root/StarCraftII/maps"
       - "PLACEHOLDER_LOGS_DIRECTORY/game_controller:/logs"
@@ -88,6 +92,24 @@ services:
       - "PLACEHOLDER_BOT2_DIRECTORY:/bot"
       - "PLACEHOLDER_LOGS_DIRECTORY/bot-controller-2:/logs"
 
+  bot_controller_observer:
+    # Start only after the game is ready
+    depends_on:
+      game_is_ready:
+        condition: service_healthy
+    network_mode: "service:game_controller"
+
+    image: aiarena/arenaclient-bot:PLACEHOLDER_VERSION
+    environment:
+      - "BOT_NAME=PLACEHOLDER_OBSERVER_BOT_NAME"
+      - "GAME_HOST=127.0.0.1"
+      - "GAME_PORT=10003"
+      - "OPPONENT_ID="
+      - "OBSERVER_MODE=true"
+    volumes:
+      - "PLACEHOLDER_OBSERVER_BOT_DIRECTORY:/bot"
+      - "PLACEHOLDER_LOGS_DIRECTORY/bot-controller-observer:/logs"
+
   match_controller:
     # Start only after the game is ready
     depends_on:
@@ -103,6 +125,8 @@ services:
       - "ACMATCH_CACHING_SERVER_URL=PLACEHOLDER_API_URL"
       - "ACMATCH_ARENA_CLIENT_ID=client-controller"
       - "ACMATCH_API_TOKEN=987"
+      - "ACMATCH_OBSERVER_ENABLED=true"
+      - "ACMATCH_OBSERVER_BOT_PATH=/bots/observer"
     volumes:
       - "PLACEHOLDER_BOTS_DIRECTORY:/bots"
       - "PLACEHOLDER_GAMESETS_DIRECTORY:/game"

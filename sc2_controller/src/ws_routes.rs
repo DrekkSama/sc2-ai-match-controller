@@ -78,6 +78,7 @@ async fn websocket(bot_ws: WebSocket, player_seat: PlayerSeat, addr: SocketAddr)
     let player_num = match player_seat.player_num {
         1 => PlayerNum::One,
         2 => PlayerNum::Two,
+        3 => PlayerNum::Observer,
         _ => {
             error!("Invalid player number: {}", player_seat.player_num);
             GAME_RESULT.write().unwrap().set_init_error(match_id);
@@ -85,8 +86,11 @@ async fn websocket(bot_ws: WebSocket, player_seat: PlayerSeat, addr: SocketAddr)
         }
     };
 
+    let is_observer = player_seat.is_observer;
+
     if let PlayerNum::One = player_num {
-        match client_ws.create_game(&map, false).await {
+        let observer_enabled = match_request.observer_enabled.unwrap_or(false);
+        match client_ws.create_game(&map, false, observer_enabled).await {
             Ok(_) => {
                 let mut s = GAME_READY_FLAG.write().unwrap();
                 debug!("Setting port_config and ready state");
@@ -194,10 +198,14 @@ async fn websocket(bot_ws: WebSocket, player_seat: PlayerSeat, addr: SocketAddr)
             }
         };
         debug!("{:?}", &p_result);
-        GAME_RESULT
-            .write()
-            .unwrap()
-            .add_player_result(match_id, player_num, p_result);
+
+        // Observer results do not affect game outcome
+        if !is_observer {
+            GAME_RESULT
+                .write()
+                .unwrap()
+                .add_player_result(match_id, player_num, p_result);
+        }
     } else {
         error!("Timeout while waiting for game to become ready");
         GAME_RESULT.write().unwrap().set_init_error(match_id);

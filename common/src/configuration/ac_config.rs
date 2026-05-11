@@ -34,6 +34,8 @@ pub struct ACConfig {
     pub aws: bool,
     pub caching_server_url: String,
     pub keep_alive: bool,
+    pub observer_enabled: bool,
+    pub observer_bot_path: String,
 }
 
 #[derive(Debug, Copy, Clone, Serialize, Deserialize, Eq, PartialEq)]
@@ -80,6 +82,8 @@ mod tests {
             aws: false,
             caching_server_url: "".to_string(),
             keep_alive: false,
+            observer_enabled: false,
+            observer_bot_path: "/bots/observer".to_string(),
         }
     }
 

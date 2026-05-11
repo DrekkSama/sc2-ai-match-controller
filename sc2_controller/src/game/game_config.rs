@@ -17,6 +17,7 @@ pub struct GameConfig {
     pub visualize: bool,
     pub validate_race: bool,
     pub players: HashMap<PlayerNum, MatchPlayer>,
+    pub observer_enabled: bool,
 }
 
 impl GameConfig {
@@ -67,6 +68,7 @@ impl GameConfig {
             real_time: false,
             validate_race: true,
             visualize: false, // Not used
+            observer_enabled: match_request.observer_enabled.unwrap_or(false),
         }
     }
 
