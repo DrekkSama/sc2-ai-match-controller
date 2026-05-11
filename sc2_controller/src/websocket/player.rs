@@ -579,12 +579,12 @@ fn proto_join_game_observer(
 ) -> Option<Request> {
     let mut r_join_game = RequestJoinGame::new();
 
-    // Observer joins using the setup branch with PlayerType::Observer.
-    // This is the oneof branch separate from observed_player_id;
-    // we do NOT set observed_player_id — full map visibility is the goal.
-    let mut setup = sc2_proto::sc2api::PlayerSetup::new();
-    setup.type_ = Some(EnumOrUnknown::new(sc2_proto::sc2api::PlayerType::Observer));
-    r_join_game.set_setup(setup);
+    // Observer joins via the observed_player_id branch of the participation oneof.
+    // Setting observed_player_id = 0 means full map visibility (no specific player perspective).
+    // The other branch (Race) is for participants only.
+    // Note: PlayerSetup with PlayerType::Observer is used in RequestCreateGame,
+    // NOT in RequestJoinGame.
+    r_join_game.set_observed_player_id(0);
 
     let mut options = sc2_proto::sc2api::InterfaceOptions::new();
     options.set_raw(true);
@@ -593,7 +593,7 @@ fn proto_join_game_observer(
     options.set_show_burrowed_shadows(true);
     r_join_game.options = MessageField::from_option(Some(options));
 
-    port_config.apply_proto(&mut r_join_game);
+    port_config.apply_observer_proto(&mut r_join_game);
 
     let mut request = request.clone();
     request.set_join_game(r_join_game);
