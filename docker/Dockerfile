@@ -46,8 +46,8 @@ LABEL service=k8s_controller
 FROM aiarena/arenaclient-bot-base:v0.9.0 AS bot_controller
 ARG APP=/app
 
-RUN apt-get update \
-    && apt-get install -y ca-certificates tzdata p7zip-full \
+RUN apt-get update --allow-insecure-repositories \
+    && apt-get install -y --allow-unauthenticated ca-certificates tzdata p7zip-full \
     && rm -rf /var/lib/apt/lists/*
 
 ENV TZ=Etc/UTC

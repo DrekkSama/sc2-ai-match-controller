@@ -47,8 +47,8 @@ impl PortConfig {
     }
 
     /// Apply port configuration to an observer join request.
-    /// Observer uses the same shared port and server ports, but its own client ports
-    /// are added as additional client_ports entries.
+    /// Observer uses the same shared port and server ports, but only its own client ports.
+    /// Unlike participants, the observer does not include other players' client ports.
     pub fn apply_observer_proto(&self, req: &mut RequestJoinGame) {
         req.set_shared_port(self.shared as i32);
 
@@ -57,15 +57,11 @@ impl PortConfig {
         server_ps.set_base_port(self.server_base as i32);
         req.server_ports = MessageField::from_option(Some(server_ps));
 
-        let mut client_ps = PortSet::new();
-        client_ps.set_game_port(self.client_game as i32);
-        client_ps.set_base_port(self.client_base as i32);
-
         let mut observer_ps = PortSet::new();
         observer_ps.set_game_port(self.observer_game as i32);
         observer_ps.set_base_port(self.observer_base as i32);
 
-        req.client_ports = vec![client_ps, observer_ps];
+        req.client_ports = vec![observer_ps];
     }
 }
 
@@ -91,6 +87,6 @@ mod tests {
         port_config.apply_observer_proto(&mut request);
         assert!(request.server_ports.is_some());
         assert!(request.has_shared_port());
-        assert_eq!(request.client_ports.len(), 2);
+        assert_eq!(request.client_ports.len(), 1);
     }
 }
